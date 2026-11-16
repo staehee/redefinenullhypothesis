@@ -141,6 +141,20 @@
  
 
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 \usepackage{authblk}
 \AtBeginDocument{\hypersetup{pdfauthor={Jinseob Kim; Taehee Shin}}}
 \renewcommand\Affilfont{\normalsize}
@@ -198,7 +212,7 @@
   pdftitle={Redefining the Null Hypothesis: Incorporating Uncertainty to Address the Limitations of Traditional p-values},
   pdfkeywords={p-value, effect size, null
 hypothesis, uncertainty, hypothesis testing, statistical
-significance, equivalence testing, multiple comparison},
+significance, equivalence testing},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -225,60 +239,62 @@ distributional assumption \(H_0: \mu \sim N(\mu_0, \tau^2)\), we derive
 an effect-size-integrated p-value. The resulting test statistic shrinks
 by a factor of \(1/\sqrt{1+nc^2}\), where \(c = \tau/\sigma\) is the
 standardized uncertainty. Through simulation studies, we demonstrate
-that our method (1) maintains proper Type I error control, (2) provides
+that our method (1) controls the Type I error rate at or below
+\(\alpha\), with exact size under the distributional null and
+conservative behavior under the point null, (2) provides
 sample-size-adaptive power that prevents trivially small effects from
 achieving significance, and (3) yields a minimum detectable effect
 \(\mathrm{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}\) that converges to
 \(z_{1-\alpha/2} c\) as \(n \to \infty\). We illustrate our approach
 with a real-data example on maternal smoking and birth weight, and
-compare it with TOST, second-generation p-values, and Bonferroni
-correction. This framework provides a unified approach that naturally
-incorporates effect size considerations into traditional hypothesis
-testing, offering researchers a principled method to distinguish between
-statistical and practical significance.
+compare it with equivalence testing (TOST). This framework provides a
+unified approach that naturally incorporates effect size considerations
+into traditional hypothesis testing, offering researchers a principled
+method to distinguish between statistical and practical significance.
 \end{abstract}
 
-\noindent\textbf{Keywords:} p-value; effect size; null hypothesis; uncertainty; hypothesis testing; statistical significance; equivalence testing; multiple comparison
+\noindent\textbf{Keywords:} p-value; effect size; null hypothesis; uncertainty; hypothesis testing; statistical significance; equivalence testing
 \bigskip
 
 
-\section{Introduction}\label{introduction}
+\section{Introduction}\label{sec-intro}
 
-Statistical hypothesis testing is an essential tool for making
-scientific claims across natural sciences---including physics, biology,
-and medicine---as well as social sciences such as economics and
-psychology (\citeproc{ref-anderson2000null}{Anderson et al. 2000}). The
-null hypothesis, first introduced by R.A. Fisher, serves as the
-hypothesis to be refuted; by demonstrating that events with low
-probability under this hypothesis have occurred, researchers argue that
-the hypothesis is false---a logic similar to proof by contradiction in
-mathematics (\citeproc{ref-2528399}{Yates 1964}). The p-value quantifies
-this probability, where the conventional threshold of \(p < 0.05\)
-indicates that the probability of observing results as extreme as or
-more extreme than the data is less than 5\% under the null hypothesis
-(\citeproc{ref-ronald2016asa}{Wasserstein and Lazar 2016}).
+Null hypothesis significance testing remains the dominant framework for
+scientific claims in the natural and social sciences
+(\citeproc{ref-anderson2000null}{Anderson et al. 2000}). Following
+Fisher, the p-value quantifies how surprising the observed data would be
+if the null hypothesis were true (\citeproc{ref-2528399}{Yates 1964}),
+and \(p < 0.05\) has long served as the conventional threshold for
+discovery (\citeproc{ref-ronald2016asa}{Wasserstein and Lazar 2016}).
+Persistent criticism of this practice has led to proposals such as
+lowering the threshold to 0.005 (\citeproc{ref-jama20181536}{Ioannidis
+2018}; \citeproc{ref-Benjamin2018}{Benjamin et al. 2018}). These
+proposals, however, leave a more basic problem untouched: with a
+sufficiently large sample, any nonzero difference becomes statistically
+significant.
 
-The threshold of \(p < 0.05\) has long served as the gold standard for
-scientific discovery. However, criticisms of this practice have been
-persistent, culminating in recent proposals to lower the significance
-threshold from 0.05 to 0.005 (\citeproc{ref-jama20181536}{Ioannidis
-2018}; \citeproc{ref-Benjamin2018}{Benjamin et al. 2018}). Nevertheless,
-merely lowering the significance level while retaining the traditional
-p-value framework represents only a temporary fix that fails to address
-the fundamental problems we discuss below.
+This problem is now practical rather than theoretical. Studies based on
+electronic health records, nationwide health insurance claims databases,
+and online platforms routinely analyze hundreds of thousands to millions
+of observations. At such sample sizes, p-values for negligible
+differences collapse toward zero, and statistical significance carries
+little information about whether an effect matters
+(\citeproc{ref-lin2013too}{Lin et al. 2013}). For a two-sided z-test
+with \(z = (\bar{X} - \mu_0)/(\sigma/\sqrt{n})\), any
+\(\bar{X} \neq \mu_0\) yields a p-value that approaches zero as \(n\)
+increases.
 
-We identify the unrealistic null hypothesis as the root cause of these
-problems. In hypothesis testing, the null hypothesis must be stated
-precisely (e.g., \(\mu = 0\)), as a clear hypothesis is easier to
-refute. However, such precise null hypotheses do not exist in reality.
-Does anyone truly believe that a value is exactly zero? Most researchers
-implicitly acknowledge some degree of uncertainty, and claiming that a
-hypothesis of zero is false because the measured value is 0.0000001 is
-hardly convincing. Yet current hypothesis testing methods employ null
-hypotheses with no uncertainty whatsoever, meaning that no matter how
-small the difference between the measured value and the hypothesized
-value, a sufficiently large sample size will eventually yield
-\(p < 0.05\).
+We identify the point null hypothesis as the root cause. A null
+hypothesis must be stated precisely (e.g., \(\mu = 0\)) to be refutable,
+but an effect of exactly zero is rarely plausible. Meehl argued that in
+the behavioral sciences the point null is almost always false, so that
+its rejection becomes nearly certain as the sample grows and offers weak
+support for any substantive theory (\citeproc{ref-meehl1967theory}{Meehl
+1967}). Cohen likewise observed that the ``nil'' hypothesis of exactly
+zero effect is essentially never true in practice, so that rejecting it
+is uninformative (\citeproc{ref-cohen1994earth}{Cohen 1994}).
+Conventional tests nevertheless treat the null value as known without
+error.
 
 This limitation has led to calls for examining effect sizes alongside
 p-values (\citeproc{ref-sullivan2012using}{Sullivan and Feinn 2012}).
@@ -292,6 +308,21 @@ sizes.
 
 Several approaches have been proposed to address the limitations of
 traditional null hypothesis significance testing:
+
+\textbf{Interval null hypotheses.} Hodges and Lehmann proposed testing
+whether a parameter lies within a small neighborhood of the null value
+rather than exactly at it, on the grounds that point hypotheses are
+seldom exactly true (\citeproc{ref-hodges1954testing}{Hodges and Lehmann
+1954}). Equivalence testing, minimum-effect testing, and
+second-generation p-values can all be viewed as descendants of this
+idea; our distributional null is a smooth analog of the interval null.
+
+\textbf{Lindley's paradox.} Lindley showed that, for a fixed p-value,
+the posterior probability of a point null hypothesis tends to one as the
+sample size grows, so that frequentist and Bayesian conclusions diverge
+in large samples (\citeproc{ref-lindley1957statistical}{Lindley 1957}).
+Our framework addresses the same large-sample tension from the
+frequentist side.
 
 \textbf{Equivalence Testing and TOST.} The Two One-Sided Tests (TOST)
 procedure tests whether an effect falls within a pre-specified
@@ -322,11 +353,10 @@ rates (\citeproc{ref-Benjamin2018}{Benjamin et al. 2018}). However, this
 approach does not address the fundamental issue that any fixed threshold
 can be overcome with sufficient sample size.
 
-Unlike existing approaches that examine p-values and effect sizes
-separately (a ``physical'' juxtaposition), our framework achieves a
-``chemical'' integration where effect size directly modulates the test
-statistic. Our approach provides a sample-size-adaptive criterion that
-naturally penalizes trivially small effects.
+Existing practice typically reports p-values and effect sizes side by
+side and leaves their joint interpretation to the reader. In our
+framework, the effect size enters the test statistic directly, yielding
+a sample-size-adaptive criterion that penalizes trivially small effects.
 
 \subsection{Contributions}\label{contributions}
 
@@ -338,16 +368,31 @@ naturally penalizes trivially small effects.
   statistics by \(1/\sqrt{1+nc^2}\), integrating effect size and sample
   size into a single measure.
 \item
-  \textbf{Minimum detectable effect:} The framework yields
-  \(\text{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}\), which bounds
-  significance even as \(n \to \infty\).
+  \textbf{Minimum detectable effect and sample size:} The framework
+  yields \(\text{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}\), which
+  bounds significance even as \(n \to \infty\), together with a
+  closed-form sample size formula.
 \item
-  \textbf{Multiple testing as uncertainty control:} Instead of adjusting
-  \(\alpha\), we expand the null-interval by scaling uncertainty with
-  the number of hypotheses: \(c_m = c \cdot m^b\).
+  \textbf{Calibration and interpretation:} The test has exact size
+  \(\alpha\) under the distributional null and is conservative under the
+  point null, and its rejection region is closely related to the
+  interval criteria underlying TOST and SGPV.
 \end{enumerate}
 
-\section{Methods}\label{methods}
+The remainder of this paper is organized as follows.
+Section~\ref{sec-methods} introduces the uncertainty-adjusted null
+hypothesis, derives the shrinkage factor and the minimum detectable
+effect, and extends the approach to t, regression, and chi-square
+statistics. Section~\ref{sec-sim} evaluates Type I error and power by
+simulation. Section~\ref{sec-real} applies the method to birth weight
+data. Section~\ref{sec-tost} compares the method with equivalence
+testing. Section~\ref{sec-guidelines} gives practical guidance on
+choosing \(c\) and on sample size calculation.
+Section~\ref{sec-discussion} discusses the relation to Bayesian
+approaches, an exploratory extension to multiple testing, and
+limitations, and Section~\ref{sec-conclusion} concludes.
+
+\section{Methods}\label{sec-methods}
 
 \subsection{Null Hypothesis with
 Uncertainty}\label{null-hypothesis-with-uncertainty}
@@ -505,8 +550,7 @@ then
 which uses only the upper tail. For \(k = 1\), \(X^2 = z^2\) and this
 reduces exactly to the z-scale formula above.
 
-\subsubsection{Connection to Confidence
-Intervals}\label{connection-to-confidence-intervals}
+\subsubsection{Connection to Confidence Intervals}\label{sec-ci}
 
 The criterion \(|z_{c\sigma}| > z_{1-\alpha/2}\) is closely related to,
 but not identical to, requiring that the \((1-\alpha)\) confidence
@@ -521,29 +565,35 @@ coincide when either \(1/\sqrt{n}\) or \(c\) dominates. This provides an
 intuitive bridge to TOST and SGPV, which also rely on interval-based
 reasoning.
 
-\section{Simulation Study}\label{simulation-study}
+\section{Simulation Study}\label{sec-sim}
 
 \subsection{Type I Error Control}\label{type-i-error-control}
 
-We first verify that our method maintains proper Type I error control
-under the null hypothesis.
+We evaluate the rejection rate of the uncertainty-adjusted test under
+two data-generating processes: the conventional point null
+(\(\mu = 0\)), and the distributional null from which the test is
+derived, in which the true mean is drawn from \(N(0, c^2\sigma^2)\) in
+each replicate.
 
 \begin{table}
 
-\caption{\label{tbl-type1}Type I Error Rates at \(\alpha = 0.05\)
-(10,000 simulations per scenario)}
+\caption{\label{tbl-type1}Rejection rates of the uncertainty-adjusted
+test at \(\alpha = 0.05\) under the point null and the distributional
+null (10,000 simulations per scenario)}
 
 \centering{
 
-\begin{tabular}{ccccc}
+\begin{tabular}{cccccccc}
 \toprule
-Sample Size & c=0 (Traditional) & c=0.01 & c=0.05 & c=0.1\\
+\multicolumn{1}{c}{ } & \multicolumn{4}{c}{Point null ($\mu = 0$)} & \multicolumn{3}{c}{Distributional null ($\mu \sim N(0, c^2\sigma^2)$)} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-8}
+$n$ & $c=0$ & $c=0.01$ & $c=0.05$ & $c=0.1$ & $c=0.01$ & $c=0.05$ & $c=0.1$\\
 \midrule
-30 & 0.050 & 0.051 & 0.043 & 0.025\\
-100 & 0.050 & 0.048 & 0.030 & 0.007\\
-500 & 0.050 & 0.046 & 0.003 & 0.000\\
-1000 & 0.051 & 0.044 & 0.001 & 0.000\\
-5000 & 0.048 & 0.015 & 0.000 & 0.000\\
+30 & 0.054 & 0.053 & 0.045 & 0.025 & 0.049 & 0.050 & 0.048\\
+100 & 0.050 & 0.049 & 0.028 & 0.006 & 0.051 & 0.052 & 0.049\\
+500 & 0.051 & 0.046 & 0.003 & 0.000 & 0.052 & 0.054 & 0.052\\
+1000 & 0.051 & 0.041 & 0.000 & 0.000 & 0.051 & 0.047 & 0.053\\
+5000 & 0.047 & 0.018 & 0.000 & 0.000 & 0.049 & 0.052 & 0.049\\
 \bottomrule
 \end{tabular}
 
@@ -551,10 +601,17 @@ Sample Size & c=0 (Traditional) & c=0.01 & c=0.05 & c=0.1\\
 
 \end{table}%
 
-The simulation results confirm that Type I error is well-controlled at
-the nominal level across all scenarios. When \(c = 0\), our method
-reduces to the traditional z-test. With \(c > 0\), the Type I error rate
-remains at or below the nominal level.
+Under the distributional null, the rejection rate is close to the
+nominal 0.05 for every combination of \(n\) and \(c\) (range
+0.047--0.054), as expected from the derivation. Under the point null,
+the rejection rate is at or below \(\alpha\) (up to Monte Carlo error,
+SE \(\approx 0.002\)) and decreases with both \(n\) and \(c\); for
+example, it is 0.003 at \(n = 500\) and \(c = 0.05\). The test therefore
+controls the Type I error rate at or below \(\alpha\) and is
+conservative under the point null. This conservativeness is intended:
+when the true effect is exactly zero or negligible, the method should
+rarely declare significance, and the protection grows with the sample
+size. When \(c = 0\), the method reduces to the traditional z-test.
 
 \subsection{Power Analysis}\label{power-analysis}
 
@@ -584,16 +641,18 @@ Key observations:
   appropriately reduces power, preventing trivially small effects from
   achieving significance with large samples.
 \item
-  For moderate to large effect sizes (\(d \geq 0.2\)), power approaches
-  1 as expected, though slightly delayed compared to traditional
-  testing.
+  For effects well above the asymptotic threshold \(1.96c\) (e.g.,
+  \(d = 0.3\) or \(0.5\) with \(c \le 0.1\)), power approaches 1 as
+  \(n\) increases, although more slowly than for the traditional test.
+  For \(d = 0.2\) and \(c = 0.1\), the effect lies only slightly above
+  \(1.96c = 0.196\), so power increases slowly.
 \item
   The choice of \(c\) determines the effect size threshold: effects
   smaller than \(\approx 1.96c\) will never achieve significance
   regardless of sample size.
 \end{enumerate}
 
-\section{Real Data Application}\label{real-data-application}
+\section{Real Data Application}\label{sec-real}
 
 We demonstrate our method using the birthweight dataset from the MASS R
 package (\citeproc{ref-venables2002mass}{Venables and Ripley 2002}),
@@ -609,17 +668,27 @@ Comparison of methods}
 
 \centering{
 
-\begin{tabular}{lcc}
+\begin{threeparttable}
+\begin{tabular}{llcl}
 \toprule
-Method & p-value & Significant ($p < 0.05$)\\
+Method & Null hypothesis & p-value & $H_0$ at $\alpha = 0.05$\\
 \midrule
-Traditional t-test & 0.0087 & TRUE\\
-Uncertainty (c=0.1) & 0.0288 & TRUE\\
-Uncertainty (c=0.2) & 0.1146 & FALSE\\
-Uncertainty (c=0.3) & 0.2394 & FALSE\\
-TOST ($\delta = 0.2\sigma$) & 0.9042 & FALSE\\
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Tests of difference}}\\
+\hspace{1em}Traditional t-test & $\Delta = 0$ & 0.0087 & Rejected\\
+\hspace{1em}Uncertainty-adjusted ($c = 0.1$) & $\Delta \sim N(0, c^2\sigma^2)$ & 0.0288 & Rejected\\
+\hspace{1em}Uncertainty-adjusted ($c = 0.2$) & $\Delta \sim N(0, c^2\sigma^2)$ & 0.1146 & Not rejected\\
+\hspace{1em}Uncertainty-adjusted ($c = 0.3$) & $\Delta \sim N(0, c^2\sigma^2)$ & 0.2394 & Not rejected\\
+\addlinespace[0.3em]
+\multicolumn{4}{l}{\textbf{Test of equivalence}}\\
+\hspace{1em}TOST ($\delta = 0.2\sigma$) & $|\Delta| \ge \delta$ & 0.9042 & Not rejected\\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}
+\item \textit{Note:} 
+\item $\Delta$, true mean difference (non-smokers minus smokers); $\sigma$, pooled SD. TOST reverses the roles of the hypotheses: its null hypothesis is non-equivalence, so a small p-value supports equivalence. A large TOST p-value means that equivalence could not be established, not that a difference was shown.
+\end{tablenotes}
+\end{threeparttable}
 
 }
 
@@ -642,16 +711,30 @@ larger than its asymptotic floor \(1.96c\). With \(c = 0.1\)
 (\(\mathrm{MDE} \approx 0.489\)), the observed effect falls below the
 threshold and the result is no longer significant
 (\(p_{c\sigma} = 0.115\)); the same holds for \(c = 0.3\)
-(\(\mathrm{MDE} \approx 0.657\), \(p_{c\sigma} = 0.239\)). This example
+(\(\mathrm{MDE} \approx 0.657\), \(p_{c\sigma} = 0.239\)). The TOST
+p-value (0.904) answers a different question: it indicates that
+equivalence within \(\pm 0.2\sigma\) could not be established, which is
+why it is reported separately in Table~\ref{tbl-birthwt}. This example
 illustrates how the choice of \(c\) encodes the researcher's judgment
 about clinically meaningful effect sizes, and that in small samples the
 evidence required for significance is stricter than the asymptotic
 threshold alone suggests.
 
-\section{Comparison with Existing
-Methods}\label{comparison-with-existing-methods}
+\section{Comparison with Equivalence Testing}\label{sec-tost}
 
-\subsection{Comparison with TOST}\label{comparison-with-tost}
+TOST and the proposed test both replace the point null with a region of
+practically negligible effects, but they ask opposite questions. TOST
+takes non-equivalence (\(|\Delta| \ge \delta\)) as the null hypothesis
+and seeks evidence that the effect is small, whereas the
+uncertainty-adjusted test takes a negligible effect as the null
+hypothesis and seeks evidence that the effect is large enough to matter.
+To compare them on a common scale, we set \(\delta = 0.2\) and
+\(c = 0.1\), so that the asymptotic threshold \(1.96c \approx 0.196\)
+matches the equivalence bound. Figure~\ref{fig-comparison-tost} shows,
+for two-sample comparisons with equal allocation, the rejection rate of
+the traditional test, the rejection rate of the uncertainty-adjusted
+test, and the rate at which TOST establishes equivalence, for total
+sample sizes of 200 and 2,000 (3,000 replicates per scenario).
 
 \begin{figure}
 
@@ -661,33 +744,43 @@ Methods}\label{comparison-with-existing-methods}
 
 }
 
-\caption{\label{fig-comparison-tost}Comparison: Uncertainty-adjusted
-method vs TOST across effect sizes (n = 200)}
+\caption{\label{fig-comparison-tost}Traditional test,
+uncertainty-adjusted test (\(c = 0.1\)), and TOST equivalence
+(\(\delta = 0.2\)) across true effect sizes for total sample sizes of
+200 and 2,000. Dotted lines mark the finite-sample MDE of the
+uncertainty-adjusted test; dashed lines mark the asymptotic threshold
+\(1.96c\).}
 
 \end{figure}%
 
-\subsection{Multiple Comparison: Uncertainty Control vs
-Bonferroni}\label{multiple-comparison-uncertainty-control-vs-bonferroni}
+With \(n = 200\), the half-width of the 90\% confidence interval for the
+mean difference (about 0.23 SD) exceeds the equivalence bound, so TOST
+almost never establishes equivalence, even when the true effect is zero.
+The uncertainty-adjusted test rejects only for effects well above the
+bound, reaching about 50\% power near its finite-sample MDE (0.339).
+Neither method supports a firm conclusion for effects between zero and
+about 0.3, which reflects the limited information in a sample of this
+size.
 
-\begin{figure}
+With \(n = 2{,}000\), the three procedures divide the effect-size axis
+into distinct regions. For true effects near zero, TOST establishes
+equivalence with high probability (1.00 at \(d = 0\)). For effects
+between roughly 0.1 and 0.2, the traditional test rejects frequently
+(0.88 at \(d = 0.14\)), whereas the uncertainty-adjusted test rarely
+does (0.05); these differences are statistically detectable but fall
+below the threshold of practical importance. For effects of about 0.3 or
+larger, the uncertainty-adjusted test rejects with high probability
+(0.97 at \(d = 0.3\)).
 
-\centering{
+The uncertainty-adjusted test therefore behaves like a one-step
+minimum-effect test. Its threshold, \(z_{1-\alpha/2}\sqrt{1/n + c^2}\),
+combines sampling error and null uncertainty in quadrature, whereas the
+interval criterion combines them additively (Section~\ref{sec-ci}). It
+does not replace TOST: when the goal is to show that an effect is
+negligible, an equivalence test is still required, and the two
+procedures can be reported together.
 
-\pandocbounded{\includegraphics[keepaspectratio]{redefinenullhypothesis_arxiv_files/figure-pdf/fig-multiple-1.pdf}}
-
-}
-
-\caption{\label{fig-multiple}Multiple testing: Uncertainty control
-(\(c_m = c \cdot m^b\)) vs Bonferroni correction}
-
-\end{figure}%
-
-Key insight: Uncertainty control provides sample-size-adaptive
-stringency. At \(n = 10,000\), it matches Bonferroni correction; at
-smaller sample sizes, it is less stringent, reflecting the principle
-that small samples cannot reliably detect tiny effects anyway.
-
-\section{Practical Guidelines}\label{practical-guidelines}
+\section{Practical Guidelines}\label{sec-guidelines}
 
 \subsection{\texorpdfstring{Choosing the Uncertainty Parameter
 \(c\)}{Choosing the Uncertainty Parameter c}}\label{choosing-the-uncertainty-parameter-c}
@@ -723,13 +816,6 @@ important effect size. This ensures that effects below your threshold
 cannot achieve significance regardless of sample size, while effects
 above it can be detected with adequate power.
 
-\textbf{Calibration for multiple testing (\(b\) parameter).} We set
-\(b = 0.069\) so that uncertainty control matches Bonferroni stringency
-at \(m = 10^6\) hypotheses and \(n = 10{,}000\) samples---a scenario
-typical of Genome-Wide Association Studies (GWAS). For other contexts,
-\(b\) can be recalibrated: larger \(b\) increases stringency more
-rapidly with the number of hypotheses.
-
 \subsection{Sample Size Calculation}\label{sample-size-calculation}
 
 With uncertainty \(c\), the required sample size for power \(1-\beta\)
@@ -754,20 +840,33 @@ adjustment (\(\alpha = 0.05\), power = 0.8)}
 
 \end{figure}%
 
-\section{Discussion}\label{discussion}
+\section{Discussion}\label{sec-discussion}
 
-\subsection{Distinction from Bayesian
-Approaches}\label{distinction-from-bayesian-approaches}
+\subsection{Relation to Bayesian
+Approaches}\label{relation-to-bayesian-approaches}
 
-It is important to clarify that our uncertainty parameter \(\tau\) is
-not a Bayesian prior. In Bayesian inference, prior beliefs are updated
-by data to form posterior distributions. Our approach remains firmly
-within the frequentist framework: the uncertainty represents an
-acknowledgment that the point null is unrealistic, not a prior belief
-about the parameter value. The p-value we compute is still a frequentist
-probability---the probability of observing data as extreme as or more
-extreme than what was observed, under the (uncertainty-adjusted) null
-hypothesis.
+The variance \(\sigma^2/n + \tau^2\) underlying \(z_\tau\) is the
+variance of the prior predictive distribution of \(\bar{X}\) when
+\(\mu \sim N(\mu_0, \tau^2)\), and \(p_{c\sigma}\) is formally a prior
+predictive p-value in the sense of Box
+(\citeproc{ref-box1980sampling}{Box 1980}). The proposed test is
+therefore identical in form to a Bayesian model check of a normal prior.
+The two differ in interpretation and purpose. In the Bayesian setting,
+\(\tau\) expresses prior belief about the parameter, the prior is
+combined with the likelihood to form a posterior, and inference is based
+on that posterior. In our framework, \(\tau\) is not a statement of
+belief about where the parameter lies; it specifies how far from
+\(\mu_0\) an effect may lie and still be regarded as practically
+negligible, and it is chosen on substantive grounds
+(Section~\ref{sec-guidelines}) rather than elicited as a prior. No
+posterior is computed, and the resulting p-value is used in the usual
+frequentist way, as a tail probability compared with a fixed threshold.
+This view also clarifies the link to Lindley's paradox
+(\citeproc{ref-lindley1957statistical}{Lindley 1957}): once
+\(\tau > 0\), the test statistic for a fixed observed effect size
+converges to \(d/c\) rather than growing without bound as \(n\)
+increases, which removes the large-sample conflict that arises under a
+point null.
 
 \subsection{Advantages of the Proposed
 Framework}\label{advantages-of-the-proposed-framework}
@@ -788,9 +887,46 @@ Framework}\label{advantages-of-the-proposed-framework}
   sizes are practically meaningful.
 \item
   \textbf{Compatibility:} The framework extends naturally to all
-  Wald-type statistics (t-tests, regression coefficients, etc.) and
-  multiple testing scenarios.
+  Wald-type statistics (t-tests, regression coefficients, etc.).
 \end{enumerate}
+
+\subsection{Exploratory Extension: Multiple
+Testing}\label{exploratory-extension-multiple-testing}
+
+Testing many hypotheses at once can be viewed as increasing the
+uncertainty attached to each null hypothesis. A natural extension is to
+let the uncertainty grow with the number of hypotheses,
+\(c_m = c \cdot m^b\), instead of shrinking \(\alpha\) as in Bonferroni
+correction. With \(c = 0.01\) and \(b = 0.069\), this rule matches the
+Bonferroni threshold at \(m = 10^6\) and \(n = 10{,}000\), a
+configuration typical of genome-wide association studies
+(Figure~\ref{fig-multiple}).
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{redefinenullhypothesis_arxiv_files/figure-pdf/fig-multiple-1.pdf}}
+
+}
+
+\caption{\label{fig-multiple}Required p-value (\(p_{\text{req}}\)) by
+number of hypotheses (\(m\)): uncertainty control
+(\(c_m = c \cdot m^b\), \(c = 0.01\), \(b = 0.069\)) at several sample
+sizes vs Bonferroni correction}
+
+\end{figure}%
+
+At smaller sample sizes, however, the required p-value is far less
+stringent than the Bonferroni threshold (about \(5.5 \times 10^{-3}\) at
+\(n = 1{,}500\) and \(m = 10^6\), compared with \(5 \times 10^{-8}\)).
+Under the global point null, the rule therefore does not control the
+family-wise error rate, and the expected number of false positives can
+be large when \(n\) is small. We regard uncertainty control as an
+exploratory extension rather than a replacement for FWER or FDR control.
+Characterizing its error-rate properties, for example the rate at which
+effects smaller than \(1.96c_m\) are declared significant, and choosing
+\(b\) in a principled way are left for future work.
 
 \subsection{Limitations}\label{limitations}
 
@@ -817,21 +953,22 @@ Framework}\label{advantages-of-the-proposed-framework}
   needed.
 \end{enumerate}
 
-\section{Conclusion}\label{conclusion}
+\section{Conclusion}\label{sec-conclusion}
 
 We have presented a redefined hypothesis testing framework that
 incorporates uncertainty into the null hypothesis. By acknowledging that
 point null hypotheses are unrealistic, our method provides
 effect-size-integrated p-values that prevent trivially small differences
-from achieving statistical significance. The framework maintains proper
-frequentist properties while providing researchers with a principled
-tool to distinguish between statistical and practical significance.
+from achieving statistical significance. The test has exact size under
+the distributional null and is conservative under the point null, while
+providing researchers with a principled tool to distinguish between
+statistical and practical significance.
 
 The minimum detectable effect
 \(\text{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}\) provides a natural
-floor on detectable effects, and the extension to multiple testing
-through uncertainty control (\(c_m = c \cdot m^b\)) offers an
-effect-size-aware alternative to traditional FWER/FDR methods.
+floor on detectable effects. Letting the uncertainty grow with the
+number of hypotheses (\(c_m = c \cdot m^b\)) is a possible extension to
+multiple testing whose error-rate properties remain to be established.
 
 We encourage researchers to adopt this framework alongside traditional
 analyses, particularly in large-sample studies where the distinction
@@ -866,6 +1003,20 @@ Reproducibility, \& Transparency in Statistical Analyses.''} \emph{PloS
 One} 13 (3): e0188299.
 \url{https://doi.org/10.1371/journal.pone.0188299}.
 
+\bibitem[\citeproctext]{ref-box1980sampling}
+Box, George E. P. 1980. {``Sampling and {Bayes}' Inference in Scientific
+Modelling and Robustness.''} \emph{Journal of the Royal Statistical
+Society: Series A (General)} 143 (4): 383--430.
+
+\bibitem[\citeproctext]{ref-cohen1994earth}
+Cohen, Jacob. 1994. {``The Earth Is Round (\(p < .05\)).''}
+\emph{American Psychologist} 49 (12): 997--1003.
+
+\bibitem[\citeproctext]{ref-hodges1954testing}
+Hodges, J. L., and E. L. Lehmann. 1954. {``Testing the Approximate
+Validity of Statistical Hypotheses.''} \emph{Journal of the Royal
+Statistical Society: Series B (Methodological)} 16 (2): 261--68.
+
 \bibitem[\citeproctext]{ref-jama20181536}
 Ioannidis, John P. A. 2018. {``The Proposal to Lower p Value Thresholds
 to .005.''} \emph{JAMA}, ahead of print.
@@ -883,6 +1034,19 @@ Lakens, Daniël. 2017. {``Equivalence Tests: A Practical Primer for t
 Tests, Correlations, and Meta-Analyses.''} \emph{Social Psychological
 and Personality Science} 8 (4): 355--62.
 \url{https://doi.org/10.1177/1948550617697177}.
+
+\bibitem[\citeproctext]{ref-lin2013too}
+Lin, Mingfeng, Henry C. Lucas, and Galit Shmueli. 2013. {``Too Big to
+Fail: Large Samples and the \(p\)-Value Problem.''} \emph{Information
+Systems Research} 24 (4): 906--17.
+
+\bibitem[\citeproctext]{ref-lindley1957statistical}
+Lindley, D. V. 1957. {``A Statistical Paradox.''} \emph{Biometrika} 44
+(1/2): 187--92.
+
+\bibitem[\citeproctext]{ref-meehl1967theory}
+Meehl, Paul E. 1967. {``Theory-Testing in Psychology and Physics: A
+Methodological Paradox.''} \emph{Philosophy of Science} 34 (2): 103--15.
 
 \bibitem[\citeproctext]{ref-sullivan2012using}
 Sullivan, Gail M, and Richard Feinn. 2012. {``Using Effect Size---or Why
