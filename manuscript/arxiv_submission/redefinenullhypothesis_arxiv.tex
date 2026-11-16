@@ -229,29 +229,24 @@ Address the Limitations of Traditional p-values}
 \begin{document}
 \maketitle
 \begin{abstract}
-The p-value, widely used in statistical hypothesis testing, suffers from
-a fundamental limitation: with sufficiently large sample sizes, even
-trivially small effects can achieve statistical significance. This
-problem arises because most studies employ an unrealistic null
-hypothesis that the true effect is exactly zero. We propose a redefined
-hypothesis testing framework that incorporates uncertainty into the null
-hypothesis. By replacing the point null \(H_0: \mu = \mu_0\) with a
-distributional assumption \(H_0: \mu \sim N(\mu_0, \tau^2)\), we derive
-an effect-size-integrated p-value. The resulting test statistic shrinks
-by a factor of \(1/\sqrt{1+nc^2}\), where \(c = \tau/\sigma\) is the
-standardized uncertainty. Through simulation studies, we demonstrate
-that our method (1) controls the Type I error rate at or below
-\(\alpha\), with exact size under the distributional null and
-conservative behavior under the point null, (2) provides
-sample-size-adaptive power that prevents trivially small effects from
-achieving significance, and (3) yields a minimum detectable effect
-\(\mathrm{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}\) that converges to
-\(z_{1-\alpha/2} c\) as \(n \to \infty\). We illustrate our approach
-with a real-data example on maternal smoking and birth weight, and
-compare it with equivalence testing (TOST). This framework provides a
-unified approach that naturally incorporates effect size considerations
-into traditional hypothesis testing, offering researchers a principled
-method to distinguish between statistical and practical significance.
+The p-value has a fundamental limitation: with sufficiently large
+samples, even trivially small effects become statistically significant,
+because most studies test the unrealistic point null hypothesis that the
+true effect is exactly zero. We propose a hypothesis testing framework
+that incorporates uncertainty into the null hypothesis by replacing the
+point null with a normal distribution centered at the null value. The
+resulting test statistic is the conventional statistic shrunk by a
+factor of \(1/\sqrt{1+nc^2}\), where \(c\) is the standardized
+uncertainty, yielding an effect-size-integrated p-value. Simulation
+studies show that the test controls the Type I error rate at or below
+the nominal level, with exact size under the distributional null and
+conservative behavior under the point null. Its minimum detectable
+effect converges to approximately \(1.96c\) as the sample size grows, so
+effects below this threshold cannot reach significance however large the
+sample. We illustrate the approach with data on maternal smoking and
+birth weight and compare it with equivalence testing. The framework
+incorporates effect size directly into hypothesis testing and offers a
+principled way to distinguish statistical from practical significance.
 \end{abstract}
 
 \noindent\textbf{Keywords:} p-value; effect size; null hypothesis; uncertainty; hypothesis testing; statistical significance; equivalence testing
@@ -372,7 +367,7 @@ a sample-size-adaptive criterion that penalizes trivially small effects.
   \textbf{Minimum detectable effect and sample size:} The framework
   yields \(\text{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}\), which
   bounds significance even as \(n \to \infty\), together with a
-  closed-form sample size formula.
+  closed-form sample size formula (Section~\ref{sec-samplesize}).
 \item
   \textbf{Calibration and interpretation:} The test has exact size
   \(\alpha\) under the distributional null and is conservative under the
@@ -384,16 +379,16 @@ The remainder of this paper is organized as follows.
 Section~\ref{sec-methods} introduces the uncertainty-adjusted null
 hypothesis, derives the shrinkage factor and the minimum detectable
 effect, and extends the approach to t, regression, and chi-square
-statistics. Section~\ref{sec-sim} evaluates Type I error and power by
-simulation. Section~\ref{sec-real} applies the method to birth weight
-data. Section~\ref{sec-tost} compares the method with equivalence
-testing. Section~\ref{sec-guidelines} gives practical guidance on
-choosing \(c\) and on sample size calculation.
+statistics. Section~\ref{sec-results} evaluates Type I error and power
+by simulation (Section~\ref{sec-sim}), applies the method to birth
+weight data (Section~\ref{sec-real}), and compares it with equivalence
+testing (Section~\ref{sec-tost}). Section~\ref{sec-guidelines} gives
+practical guidance on choosing \(c\) and on sample size calculation.
 Section~\ref{sec-discussion} discusses the relation to Bayesian
 approaches, an exploratory extension to multiple testing, and
 limitations, and Section~\ref{sec-conclusion} concludes.
 
-\section{Methods}\label{sec-methods}
+\section{Materials and Methods}\label{sec-methods}
 
 \subsection{Null Hypothesis with
 Uncertainty}\label{null-hypothesis-with-uncertainty}
@@ -410,9 +405,9 @@ We now introduce uncertainty into the null hypothesis. The formulation
 \(H_0: \mu \sim N(\mu_0, \tau^2)\) expresses that while we believe the
 population mean is \(\mu_0\), we acknowledge uncertainty of magnitude
 \(\tau\). When \(\tau = 0\), this reduces to the traditional null
-hypothesis.
+hypothesis (Figure~\ref{fig-null-uncertainty}).
 
-\begin{figure}
+\begin{figure}[H]
 
 \centering{
 
@@ -455,9 +450,10 @@ hypothesis testing. Crucially, when \(c \neq 0\), we have:
 \[|z_{c\sigma}| < \left|\frac{\bar{X} - \mu_0}{\tau}\right|\]
 
 meaning that effects smaller than \(1.96 \times \tau\) can never achieve
-\(p_{c\sigma} < 0.05\), regardless of sample size.
+\(p_{c\sigma} < 0.05\), regardless of sample size
+(Figure~\ref{fig-p-shrinkage}).
 
-\begin{figure}
+\begin{figure}[H]
 
 \centering{
 
@@ -484,9 +480,10 @@ For significance at level \(\alpha\), we require
 
 As \(n \to \infty\),
 \(\text{MDE} \to z_{1-\alpha/2} \cdot c \approx 1.96c\) (for
-\(\alpha = 0.05\)). This provides a natural floor on detectable effects.
+\(\alpha = 0.05\)). This provides a natural floor on detectable effects
+(Figure~\ref{fig-mde}).
 
-\begin{figure}
+\begin{figure}[H]
 
 \centering{
 
@@ -566,15 +563,23 @@ coincide when either \(1/\sqrt{n}\) or \(c\) dominates. This provides an
 intuitive bridge to TOST and SGPV, which also rely on interval-based
 reasoning.
 
-\section{Simulation Study}\label{sec-sim}
+\subsection{Use of Generative AI}\label{sec-ai}
 
-\subsection{Type I Error Control}\label{type-i-error-control}
+Generative AI tools were used during the preparation of this manuscript
+for TODO (tasks to be specified by the authors). All AI-assisted output
+was reviewed and verified by the authors.
+
+\section{Results}\label{sec-results}
+
+\subsection{Simulation Study}\label{sec-sim}
+
+\subsubsection{Type I Error Control}\label{type-i-error-control}
 
 We evaluate the rejection rate of the uncertainty-adjusted test under
 two data-generating processes: the conventional point null
 (\(\mu = 0\)), and the distributional null from which the test is
 derived, in which the true mean is drawn from \(N(0, c^2\sigma^2)\) in
-each replicate.
+each replicate (Table~\ref{tbl-type1}).
 
 \begin{table}
 
@@ -614,12 +619,12 @@ when the true effect is exactly zero or negligible, the method should
 rarely declare significance, and the protection grows with the sample
 size. When \(c = 0\), the method reduces to the traditional z-test.
 
-\subsection{Power Analysis}\label{power-analysis}
+\subsubsection{Power Analysis}\label{power-analysis}
 
 We compare the power of our method against traditional testing across
-effect sizes.
+effect sizes (Figure~\ref{fig-power}).
 
-\begin{figure}
+\begin{figure}[H]
 
 \centering{
 
@@ -653,14 +658,16 @@ Key observations:
   regardless of sample size.
 \end{enumerate}
 
-\section{Real Data Application}\label{sec-real}
+\subsection{Real Data Application}\label{sec-real}
 
 We demonstrate our method using the birthweight dataset from the MASS R
 package (\citeproc{ref-venables2002mass}{Venables and Ripley 2002}),
-which contains data on 189 births at Baystate Medical Center,
-Springfield, MA during 1986. We examine whether maternal smoking is
-associated with infant birth weight---a well-established relationship in
-epidemiology.
+originally described by Hosmer and Lemeshow
+(\citeproc{ref-hosmer1989applied}{1989}), which contains data on 189
+births at Baystate Medical Center, Springfield, MA during 1986. We
+examine whether maternal smoking is associated with infant birth
+weight---a well-established relationship in epidemiology
+(Table~\ref{tbl-birthwt}).
 
 \begin{table}
 
@@ -721,7 +728,7 @@ about clinically meaningful effect sizes, and that in small samples the
 evidence required for significance is stricter than the asymptotic
 threshold alone suggests.
 
-\section{Comparison with Equivalence Testing}\label{sec-tost}
+\subsection{Comparison with Equivalence Testing}\label{sec-tost}
 
 TOST and the proposed test both replace the point null with a region of
 practically negligible effects, but they ask opposite questions. TOST
@@ -737,7 +744,7 @@ the traditional test, the rejection rate of the uncertainty-adjusted
 test, and the rate at which TOST establishes equivalence, for total
 sample sizes of 200 and 2,000 (3,000 replicates per scenario).
 
-\begin{figure}
+\begin{figure}[H]
 
 \centering{
 
@@ -787,12 +794,16 @@ procedures can be reported together.
 \(c\)}{Choosing the Uncertainty Parameter c}}\label{choosing-the-uncertainty-parameter-c}
 
 The choice of \(c\) should be guided by the minimum
-clinically/practically important difference (MCID):
+clinically/practically important difference (MCID).
+Table~\ref{tbl-guidelines} lists suggested values of \(c\) for several
+minimum important effect sizes, together with the corresponding
+asymptotic MDE.
 
 \begin{table}
 
 \caption{\label{tbl-guidelines}Recommended uncertainty parameter \(c\)
-based on minimum important effect size}
+based on minimum important effect size. The Example column gives
+illustrative examples only.}
 
 \centering{
 
@@ -817,18 +828,34 @@ important effect size. This ensures that effects below your threshold
 cannot achieve significance regardless of sample size, while effects
 above it can be detected with adequate power.
 
-\subsection{Sample Size Calculation}\label{sample-size-calculation}
+\subsection{Sample Size Calculation}\label{sec-samplesize}
 
-With uncertainty \(c\), the required sample size for power \(1-\beta\)
-is:
+Under the alternative, the estimated standardized effect is
+approximately \(N(d, 1/n)\), so its standard deviation is
+\(\sqrt{1/n}\); the null uncertainty \(c\) enters only the rejection
+threshold \(z_{1-\alpha/2}\sqrt{1/n + c^2}\). Ignoring the probability
+of rejection in the opposite tail, the required sample size for power
+\(1-\beta\) satisfies
 
-\[n_{c\sigma} = \frac{1}{1/n - c^2}\]
+\[d = z_{1-\alpha/2}\sqrt{\frac{1}{n} + c^2} + z_{1-\beta}\sqrt{\frac{1}{n}}.\]
 
-where \(n\) is the traditional sample size. If \(1/n \leq c^2\), no
-finite sample size can achieve the desired power---the target effect is
-below the minimum detectable threshold.
+Writing \(s = 1/\sqrt{n}\) and \(A = z_{1-\alpha/2}^2 - z_{1-\beta}^2\)
+(positive whenever \(z_{1-\alpha/2} > z_{1-\beta}\), e.g.,
+\(\alpha = 0.05\) and power 0.8), squaring
+\(d - z_{1-\beta}s = z_{1-\alpha/2}\sqrt{s^2 + c^2}\) gives
+\(A s^2 + 2 d z_{1-\beta} s - (d^2 - z_{1-\alpha/2}^2 c^2) = 0\), whose
+positive root is
 
-\begin{figure}
+\[s = \frac{-d z_{1-\beta} + \sqrt{d^2 z_{1-\beta}^2 + A\,(d^2 - z_{1-\alpha/2}^2 c^2)}}{A}, \qquad n_{c\sigma} = \frac{1}{s^2}.\]
+
+When \(c = 0\), this reduces to the traditional formula
+\(n = \left((z_{1-\alpha/2} + z_{1-\beta})/d\right)^2\). If
+\(d \leq z_{1-\alpha/2}\,c\), no finite sample size can achieve the
+desired power---the target effect does not exceed the asymptotic minimum
+detectable effect. Figure~\ref{fig-samplesize} shows the required sample
+size for several values of \(c\).
+
+\begin{figure}[H]
 
 \centering{
 
@@ -903,7 +930,7 @@ Bonferroni threshold at \(m = 10^6\) and \(n = 10{,}000\), a
 configuration typical of genome-wide association studies
 (Figure~\ref{fig-multiple}).
 
-\begin{figure}
+\begin{figure}[H]
 
 \centering{
 
@@ -954,7 +981,7 @@ effects smaller than \(1.96c_m\) are declared significant, and choosing
   needed.
 \end{enumerate}
 
-\section{Conclusion}\label{sec-conclusion}
+\section{Conclusions}\label{sec-conclusion}
 
 We have presented a redefined hypothesis testing framework that
 incorporates uncertainty into the null hypothesis. By acknowledging that
@@ -980,6 +1007,33 @@ between statistical and practical significance is most critical.
 \emph{This work was originally conceived in 2017 and first publicly
 documented on November 8, 2018 at
 https://blog.zarathu.com/posts/2018-11-08-redefinenullhypothesis/}
+
+\textbf{Supplementary Materials:} The following supporting information
+can be downloaded at: TODO (link assigned by the journal). Code S1: R
+scripts reproducing all simulations, tables, and figures.
+
+\textbf{Author Contributions:} Conceptualization, J.K.; methodology,
+J.K. and T.S.; software, T.S.; validation, T.S.; formal analysis, J.K.
+and T.S.; writing---original draft preparation, J.K.; writing---review
+and editing, J.K. and T.S.; visualization, T.S.; supervision, J.K. All
+authors have read and agreed to the published version of the manuscript.
+
+\textbf{Funding:} This research received no external funding.
+
+\textbf{Data Availability Statement:} The birth weight data analyzed in
+this study are publicly available as the dataset \texttt{birthwt} in the
+R package MASS. The R code used to generate all simulation results,
+tables, and figures is available at
+\url{https://github.com/staehee/redefinenullhypothesis/tree/main/code}
+and as Code S1 in the Supplementary Materials.
+
+\textbf{Acknowledgments:} During the preparation of this manuscript, the
+authors used {[}TODO: tool name, version{]} for the purposes of
+{[}TODO{]}. The authors have reviewed and edited the output and take
+full responsibility for the content of this publication.
+
+\textbf{Conflicts of Interest:} The authors declare no conflicts of
+interest.
 
 \section*{References}\label{references}
 \addcontentsline{toc}{section}{References}
@@ -1008,19 +1062,26 @@ One} 13 (3): e0188299.
 Box, George E. P. 1980. {``Sampling and {Bayes}' Inference in Scientific
 Modelling and Robustness.''} \emph{Journal of the Royal Statistical
 Society: Series A (General)} 143 (4): 383--430.
+\url{https://doi.org/10.2307/2982063}.
 
 \bibitem[\citeproctext]{ref-cohen1994earth}
 Cohen, Jacob. 1994. {``The Earth Is Round (\(p < .05\)).''}
 \emph{American Psychologist} 49 (12): 997--1003.
+\url{https://doi.org/10.1037/0003-066X.49.12.997}.
 
 \bibitem[\citeproctext]{ref-hodges1954testing}
 Hodges, J. L., and E. L. Lehmann. 1954. {``Testing the Approximate
 Validity of Statistical Hypotheses.''} \emph{Journal of the Royal
 Statistical Society: Series B (Methodological)} 16 (2): 261--68.
+\url{https://doi.org/10.1111/j.2517-6161.1954.tb00169.x}.
+
+\bibitem[\citeproctext]{ref-hosmer1989applied}
+Hosmer, David W., and Stanley Lemeshow. 1989. \emph{Applied Logistic
+Regression}. 1st ed. Wiley.
 
 \bibitem[\citeproctext]{ref-jama20181536}
 Ioannidis, John P. A. 2018. {``The Proposal to Lower p Value Thresholds
-to .005.''} \emph{JAMA}, ahead of print.
+to .005.''} \emph{JAMA} 319 (14): 1429--30.
 \url{https://doi.org/10.1001/jama.2018.1536}.
 
 \bibitem[\citeproctext]{ref-kruschke2018bayesian}
@@ -1040,23 +1101,26 @@ and Personality Science} 8 (4): 355--62.
 Lin, Mingfeng, Henry C. Lucas, and Galit Shmueli. 2013. {``Too Big to
 Fail: Large Samples and the \(p\)-Value Problem.''} \emph{Information
 Systems Research} 24 (4): 906--17.
+\url{https://doi.org/10.1287/isre.2013.0480}.
 
 \bibitem[\citeproctext]{ref-lindley1957statistical}
 Lindley, D. V. 1957. {``A Statistical Paradox.''} \emph{Biometrika} 44
-(1/2): 187--92.
+(1/2): 187--92. \url{https://doi.org/10.1093/biomet/44.1-2.187}.
 
 \bibitem[\citeproctext]{ref-meehl1967theory}
 Meehl, Paul E. 1967. {``Theory-Testing in Psychology and Physics: A
 Methodological Paradox.''} \emph{Philosophy of Science} 34 (2): 103--15.
+\url{https://doi.org/10.1086/288135}.
 
 \bibitem[\citeproctext]{ref-sullivan2012using}
 Sullivan, Gail M, and Richard Feinn. 2012. {``Using Effect Size---or Why
 the p Value Is Not Enough.''} \emph{Journal of Graduate Medical
 Education} 4 (3): 279--82.
+\url{https://doi.org/10.4300/JGME-D-12-00156.1}.
 
 \bibitem[\citeproctext]{ref-venables2002mass}
 Venables, William N, and Brian D Ripley. 2002. \emph{Modern Applied
-Statistics with s}. 4th ed. Springer.
+Statistics with {S}}. 4th ed. Springer.
 \url{https://www.stats.ox.ac.uk/pub/MASS4/}.
 
 \bibitem[\citeproctext]{ref-ronald2016asa}

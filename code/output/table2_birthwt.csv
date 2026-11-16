@@ -1,0 +1,6 @@
+Method,p_value,MDE_finite
+Traditional t-test,0.00866672637101907,
+Uncertainty-adjusted (c = 0.1),0.0288233113701993,0.351753015107423
+Uncertainty-adjusted (c = 0.2),0.114631522720088,0.488849617221889
+Uncertainty-adjusted (c = 0.3),0.239402392490599,0.656541612765477
+TOST (delta = 0.2 sigma),0.904243402203886,

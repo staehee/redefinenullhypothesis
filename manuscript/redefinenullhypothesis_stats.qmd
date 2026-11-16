@@ -1,7 +1,8 @@
 ---
 title: "Redefining the Null Hypothesis: Incorporating Uncertainty to Address the Limitations of Traditional p-values"
-abstract: |
-  The p-value, widely used in statistical hypothesis testing, suffers from a fundamental limitation: with sufficiently large sample sizes, even trivially small effects can achieve statistical significance. This problem arises because most studies employ an unrealistic null hypothesis that the true effect is exactly zero. We propose a redefined hypothesis testing framework that incorporates uncertainty into the null hypothesis. By replacing the point null $H_0: \mu = \mu_0$ with a distributional assumption $H_0: \mu \sim N(\mu_0, \tau^2)$, we derive an effect-size-integrated p-value. The resulting test statistic shrinks by a factor of $1/\sqrt{1+nc^2}$, where $c = \tau/\sigma$ is the standardized uncertainty. Through simulation studies, we demonstrate that our method (1) controls the Type I error rate at or below $\alpha$, with exact size under the distributional null and conservative behavior under the point null, (2) provides sample-size-adaptive power that prevents trivially small effects from achieving significance, and (3) yields a minimum detectable effect $\mathrm{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}$ that converges to $z_{1-\alpha/2} c$ as $n \to \infty$. We illustrate our approach with a real-data example on maternal smoking and birth weight, and compare it with equivalence testing (TOST). This framework provides a unified approach that naturally incorporates effect size considerations into traditional hypothesis testing, offering researchers a principled method to distinguish between statistical and practical significance.
+abstract: "{{< meta abstract-text >}}"
+abstract-text: |
+  The p-value has a fundamental limitation: with sufficiently large samples, even trivially small effects become statistically significant, because most studies test the unrealistic point null hypothesis that the true effect is exactly zero. We propose a hypothesis testing framework that incorporates uncertainty into the null hypothesis by replacing the point null with a normal distribution centered at the null value. The resulting test statistic is the conventional statistic shrunk by a factor of $1/\sqrt{1+nc^2}$, where $c$ is the standardized uncertainty, yielding an effect-size-integrated p-value. Simulation studies show that the test controls the Type I error rate at or below the nominal level, with exact size under the distributional null and conservative behavior under the point null. Its minimum detectable effect converges to approximately $1.96c$ as the sample size grows, so effects below this threshold cannot reach significance however large the sample. We illustrate the approach with data on maternal smoking and birth weight and compare it with equivalence testing. The framework incorporates effect size directly into hypothesis testing and offers a principled way to distinguish statistical from practical significance.
 keywords:
   - p-value
   - effect size
@@ -24,6 +25,8 @@ format:
     pdf-engine: pdflatex
     keep-tex: true
     fig-format: pdf
+    fig-pos: "H"
+    tbl-pos: "H"
     colorlinks: true
     linkcolor: blue
     citecolor: blue
@@ -43,6 +46,14 @@ format:
       text: |
         \noindent\textbf{Keywords:} p-value; effect size; null hypothesis; uncertainty; hypothesis testing; statistical significance; equivalence testing
         \bigskip
+  docx:
+    number-sections: true
+    abstract: ""
+    author:
+      - name: "Jinseob Kim^1,\\*^"
+      - name: "Taehee Shin^1,2^"
+    fig-format: png
+    fig-dpi: 300
 editor_options:
   chunk_output_type: console
 ---
@@ -60,6 +71,8 @@ knitr::opts_chunk$set(
 )
 
 library(knitr)
+library(flextable)
+is_pdf <- knitr::is_latex_output()
 library(data.table)
 library(ggplot2)
 library(scales)
@@ -98,6 +111,16 @@ cfun <- function(base, m, b) {
 theme_set(theme_bw(base_size = 12))
 ```
 
+::: {.content-visible when-format="docx"}
+^1^ Zarathu Co., Ltd., Seoul, South Korea\
+^2^ Department of Applied Statistics, Yonsei University, Seoul, South Korea\
+\* Correspondence: jinseob2kim@gmail.com
+
+**Abstract:** {{< meta abstract-text >}}
+
+**Keywords:** p-value; effect size; null hypothesis; uncertainty; hypothesis testing; statistical significance; equivalence testing
+:::
+
 # Introduction {#sec-intro}
 
 Null hypothesis significance testing remains the dominant framework for scientific claims in the natural and social sciences [@anderson2000null]. Following Fisher, the p-value quantifies how surprising the observed data would be if the null hypothesis were true [@2528399], and $p < 0.05$ has long served as the conventional threshold for discovery [@ronald2016asa]. Persistent criticism of this practice has led to proposals such as lowering the threshold to 0.005 [@jama20181536; @Benjamin2018]. These proposals, however, leave a more basic problem untouched: with a sufficiently large sample, any nonzero difference becomes statistically significant.
@@ -130,13 +153,13 @@ Existing practice typically reports p-values and effect sizes side by side and l
 
 1. **Effect-size-integrated p-value:** Introducing standardized uncertainty into the null via $\tau = c\sigma$ shrinks Wald statistics by $1/\sqrt{1+nc^2}$, integrating effect size and sample size into a single measure.
 
-2. **Minimum detectable effect and sample size:** The framework yields $\text{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}$, which bounds significance even as $n \to \infty$, together with a closed-form sample size formula.
+2. **Minimum detectable effect and sample size:** The framework yields $\text{MDE}(n) = z_{1-\alpha/2}\sqrt{1/n + c^2}$, which bounds significance even as $n \to \infty$, together with a closed-form sample size formula (@sec-samplesize).
 
 3. **Calibration and interpretation:** The test has exact size $\alpha$ under the distributional null and is conservative under the point null, and its rejection region is closely related to the interval criteria underlying TOST and SGPV.
 
-The remainder of this paper is organized as follows. @sec-methods introduces the uncertainty-adjusted null hypothesis, derives the shrinkage factor and the minimum detectable effect, and extends the approach to t, regression, and chi-square statistics. @sec-sim evaluates Type I error and power by simulation. @sec-real applies the method to birth weight data. @sec-tost compares the method with equivalence testing. @sec-guidelines gives practical guidance on choosing $c$ and on sample size calculation. @sec-discussion discusses the relation to Bayesian approaches, an exploratory extension to multiple testing, and limitations, and @sec-conclusion concludes.
+The remainder of this paper is organized as follows. @sec-methods introduces the uncertainty-adjusted null hypothesis, derives the shrinkage factor and the minimum detectable effect, and extends the approach to t, regression, and chi-square statistics. @sec-results evaluates Type I error and power by simulation (@sec-sim), applies the method to birth weight data (@sec-real), and compares it with equivalence testing (@sec-tost). @sec-guidelines gives practical guidance on choosing $c$ and on sample size calculation. @sec-discussion discusses the relation to Bayesian approaches, an exploratory extension to multiple testing, and limitations, and @sec-conclusion concludes.
 
-# Methods {#sec-methods}
+# Materials and Methods {#sec-methods}
 
 ## Null Hypothesis with Uncertainty
 
@@ -144,7 +167,7 @@ Consider drawing $n$ samples $X_1, X_2, \ldots, X_n$ from a population with unkn
 
 $$z = \dfrac{\bar{X} - \mu_0}{\sigma/\sqrt{n}} \sim N(0,1)$$
 
-We now introduce uncertainty into the null hypothesis. The formulation $H_0: \mu \sim N(\mu_0, \tau^2)$ expresses that while we believe the population mean is $\mu_0$, we acknowledge uncertainty of magnitude $\tau$. When $\tau = 0$, this reduces to the traditional null hypothesis.
+We now introduce uncertainty into the null hypothesis. The formulation $H_0: \mu \sim N(\mu_0, \tau^2)$ expresses that while we believe the population mean is $\mu_0$, we acknowledge uncertainty of magnitude $\tau$. When $\tau = 0$, this reduces to the traditional null hypothesis (@fig-null-uncertainty).
 
 ```{r}
 #| label: fig-null-uncertainty
@@ -178,7 +201,7 @@ This reveals that achieving statistical significance now requires a z-value that
 
 $$|z_{c\sigma}| < \left|\frac{\bar{X} - \mu_0}{\tau}\right|$$
 
-meaning that effects smaller than $1.96 \times \tau$ can never achieve $p_{c\sigma} < 0.05$, regardless of sample size.
+meaning that effects smaller than $1.96 \times \tau$ can never achieve $p_{c\sigma} < 0.05$, regardless of sample size (@fig-p-shrinkage).
 
 ```{r}
 #| label: fig-p-shrinkage
@@ -214,7 +237,7 @@ For significance at level $\alpha$, we require $|z_{c\sigma}| > z_{1-\alpha/2}$,
 
 $$\text{MDE}(n) = z_{1-\alpha/2} \cdot \sqrt{\frac{1}{n} + c^2}$$
 
-As $n \to \infty$, $\text{MDE} \to z_{1-\alpha/2} \cdot c \approx 1.96c$ (for $\alpha = 0.05$). This provides a natural floor on detectable effects.
+As $n \to \infty$, $\text{MDE} \to z_{1-\alpha/2} \cdot c \approx 1.96c$ (for $\alpha = 0.05$). This provides a natural floor on detectable effects (@fig-mde).
 
 ```{r}
 #| label: fig-mde
@@ -274,11 +297,17 @@ which uses only the upper tail. For $k = 1$, $X^2 = z^2$ and this reduces exactl
 
 The criterion $|z_{c\sigma}| > z_{1-\alpha/2}$ is closely related to, but not identical to, requiring that the $(1-\alpha)$ confidence interval for the effect lies entirely outside the expanded null interval $[-z_{1-\alpha/2} c\sigma, +z_{1-\alpha/2} c\sigma]$. On the standardized scale, the interval criterion requires $d > z_{1-\alpha/2}(1/\sqrt{n} + c)$, whereas our criterion requires $d > z_{1-\alpha/2}\sqrt{1/n + c^2}$. Because $\sqrt{1/n + c^2} \le 1/\sqrt{n} + c$, the interval criterion is a sufficient but more conservative condition; the two approximately coincide when either $1/\sqrt{n}$ or $c$ dominates. This provides an intuitive bridge to TOST and SGPV, which also rely on interval-based reasoning.
 
-# Simulation Study {#sec-sim}
+## Use of Generative AI {#sec-ai}
 
-## Type I Error Control
+Generative AI tools were used during the preparation of this manuscript for TODO (tasks to be specified by the authors). All AI-assisted output was reviewed and verified by the authors.
 
-We evaluate the rejection rate of the uncertainty-adjusted test under two data-generating processes: the conventional point null ($\mu = 0$), and the distributional null from which the test is derived, in which the true mean is drawn from $N(0, c^2\sigma^2)$ in each replicate.
+# Results {#sec-results}
+
+## Simulation Study {#sec-sim}
+
+### Type I Error Control
+
+We evaluate the rejection rate of the uncertainty-adjusted test under two data-generating processes: the conventional point null ($\mu = 0$), and the distributional null from which the test is derived, in which the true mean is drawn from $N(0, c^2\sigma^2)$ in each replicate (@tbl-type1).
 
 ```{r}
 #| label: tbl-type1
@@ -317,19 +346,32 @@ wide_point <- dcast(results_typeI, n ~ c, value.var = "Point")
 wide_dist <- dcast(results_typeI[c > 0], n ~ c, value.var = "Distributional")
 results_wide <- cbind(wide_point, wide_dist[, -1])
 
+if (is_pdf) {
 kable(results_wide, digits = 3, align = "c", booktabs = TRUE, format = "latex", escape = FALSE,
       col.names = c("$n$", "$c=0$", "$c=0.01$", "$c=0.05$", "$c=0.1$",
                     "$c=0.01$", "$c=0.05$", "$c=0.1$")) %>%
   kableExtra::add_header_above(c(" " = 1, "Point null ($\\\\mu = 0$)" = 4,
                                  "Distributional null ($\\\\mu \\\\sim N(0, c^2\\\\sigma^2)$)" = 3),
                                escape = FALSE)
+} else {
+  t1_keys <- c("n", "p0", "p001", "p005", "p01", "d001", "d005", "d01")
+  setnames(copy(results_wide), t1_keys) %>%
+    flextable() %>%
+    colformat_double(j = 2:8, digits = 3) %>%
+    set_header_labels(values = setNames(c("n", "c = 0", "c = 0.01", "c = 0.05", "c = 0.1", "c = 0.01", "c = 0.05", "c = 0.1"),
+                                        t1_keys)) %>%
+    add_header_row(values = c("", "Point null (μ = 0)", "Distributional null (μ ~ N(0, c²σ²))"),
+                   colwidths = c(1, 4, 3)) %>%
+    align(align = "center", part = "all") %>%
+    autofit()
+}
 ```
 
 Under the distributional null, the rejection rate is close to the nominal 0.05 for every combination of $n$ and $c$ (range `r sprintf('%.3f', min(results_typeI[c > 0, Distributional]))`--`r sprintf('%.3f', max(results_typeI[c > 0, Distributional]))`), as expected from the derivation. Under the point null, the rejection rate is at or below $\alpha$ (up to Monte Carlo error, SE $\approx 0.002$) and decreases with both $n$ and $c$; for example, it is `r sprintf('%.3f', results_typeI[n == 500 & c == 0.05, Point])` at $n = 500$ and $c = 0.05$. The test therefore controls the Type I error rate at or below $\alpha$ and is conservative under the point null. This conservativeness is intended: when the true effect is exactly zero or negligible, the method should rarely declare significance, and the protection grows with the sample size. When $c = 0$, the method reduces to the traditional z-test.
 
-## Power Analysis
+### Power Analysis
 
-We compare the power of our method against traditional testing across effect sizes.
+We compare the power of our method against traditional testing across effect sizes (@fig-power).
 
 ```{r}
 #| label: fig-power
@@ -374,9 +416,9 @@ Key observations:
 2. For effects well above the asymptotic threshold $1.96c$ (e.g., $d = 0.3$ or $0.5$ with $c \le 0.1$), power approaches 1 as $n$ increases, although more slowly than for the traditional test. For $d = 0.2$ and $c = 0.1$, the effect lies only slightly above $1.96c = 0.196$, so power increases slowly.
 3. The choice of $c$ determines the effect size threshold: effects smaller than $\approx 1.96c$ will never achieve significance regardless of sample size.
 
-# Real Data Application {#sec-real}
+## Real Data Application {#sec-real}
 
-We demonstrate our method using the birthweight dataset from the MASS R package [@venables2002mass], which contains data on 189 births at Baystate Medical Center, Springfield, MA during 1986. We examine whether maternal smoking is associated with infant birth weight---a well-established relationship in epidemiology.
+We demonstrate our method using the birthweight dataset from the MASS R package [@venables2002mass], originally described by @hosmer1989applied, which contains data on 189 births at Baystate Medical Center, Springfield, MA during 1986. We examine whether maternal smoking is associated with infant birth weight---a well-established relationship in epidemiology (@tbl-birthwt).
 
 ```{r}
 #| label: tbl-birthwt
@@ -428,6 +470,7 @@ results <- data.table(
                                   ifelse(p_tost < 0.05, "Rejected", "Not rejected"))
 )
 
+if (is_pdf) {
 kable(results, align = "llcl", booktabs = TRUE, format = "latex", escape = FALSE) %>%
   kableExtra::pack_rows("Tests of difference", 1, 1 + length(c_values)) %>%
   kableExtra::pack_rows("Test of equivalence", 2 + length(c_values), 2 + length(c_values)) %>%
@@ -436,13 +479,32 @@ kable(results, align = "llcl", booktabs = TRUE, format = "latex", escape = FALSE
     "TOST reverses the roles of the hypotheses: its null hypothesis is non-equivalence, so a small p-value supports equivalence. ",
     "A large TOST p-value means that equivalence could not be established, not that a difference was shown."),
     threeparttable = TRUE, escape = FALSE, general_title = "Note:")
+} else {
+  data.table(
+    Test = c(rep("Tests of difference", 1 + length(c_values)), "Test of equivalence"),
+    Method = c("Traditional t-test", paste0("Uncertainty-adjusted (c = ", c_values, ")"), "TOST (δ = 0.2σ)"),
+    `Null hypothesis` = c("Δ = 0", rep("Δ ~ N(0, c²σ²)", length(c_values)), "|Δ| ≥ δ"),
+    `p-value` = results$`p-value`,
+    `H0 at α = 0.05` = results[[4]]
+  ) %>%
+    flextable() %>%
+    merge_v(j = "Test") %>%
+    valign(j = "Test", valign = "top") %>%
+    align(j = c("Test", "Method", "Null hypothesis"), align = "left", part = "all") %>%
+    add_footer_lines(paste0(
+      "Δ, true mean difference (non-smokers minus smokers); σ, pooled SD. ",
+      "TOST reverses the roles of the hypotheses: its null hypothesis is non-equivalence, so a small p-value supports equivalence. ",
+      "A large TOST p-value means that equivalence could not be established, not that a difference was shown.")) %>%
+    fix_border_issues() %>%
+    autofit(part = c("header", "body"))
+}
 ```
 
 In this dataset, non-smoking mothers ($n = `r n2`$) had a mean infant birth weight of `r sprintf('%.0f', mean(nonsmokers))` g (SD `r sprintf('%.0f', sd(nonsmokers))` g), and smoking mothers ($n = `r n1`$) had a mean of `r sprintf('%.0f', mean(smokers))` g (SD `r sprintf('%.0f', sd(smokers))` g). The mean difference was `r sprintf('%.0f', mean_diff)` g (pooled SD `r sprintf('%.0f', pooled_sd)` g), corresponding to Cohen's $d = `r sprintf('%.3f', effect_size)`$ and $t = `r sprintf('%.2f', t_stat)`$.
 
 **Interpretation:** The traditional t-test yields a statistically significant result ($p = `r sprintf('%.3f', p_trad)`$), indicating that infants of non-smoking mothers weigh more than those of smoking mothers. The observed effect size ($d = `r sprintf('%.3f', effect_size)`$) corresponds to a difference of approximately `r sprintf('%.0f', mean_diff)` g. Because the sample is modest (effective sample size $n_1 n_2/(n_1+n_2) \approx `r sprintf('%.0f', n_eff)`$), the finite-sample MDE is considerably larger than its asymptotic floor $1.96c$. With $c = 0.1$ ($\mathrm{MDE} \approx `r sprintf('%.3f', qnorm(0.975) * sqrt(1/n_eff + 0.1^2))`$), significance is maintained ($p_{c\sigma} = `r sprintf('%.3f', p_uncertainty[1])`$). With $c = 0.2$ ($\mathrm{MDE} \approx `r sprintf('%.3f', qnorm(0.975) * sqrt(1/n_eff + 0.2^2))`$), the observed effect falls below the threshold and the result is no longer significant ($p_{c\sigma} = `r sprintf('%.3f', p_uncertainty[2])`$); the same holds for $c = 0.3$ ($\mathrm{MDE} \approx `r sprintf('%.3f', qnorm(0.975) * sqrt(1/n_eff + 0.3^2))`$, $p_{c\sigma} = `r sprintf('%.3f', p_uncertainty[3])`$). The TOST p-value (`r sprintf('%.3f', p_tost)`) answers a different question: it indicates that equivalence within $\pm 0.2\sigma$ could not be established, which is why it is reported separately in @tbl-birthwt. This example illustrates how the choice of $c$ encodes the researcher's judgment about clinically meaningful effect sizes, and that in small samples the evidence required for significance is stricter than the asymptotic threshold alone suggests.
 
-# Comparison with Equivalence Testing {#sec-tost}
+## Comparison with Equivalence Testing {#sec-tost}
 
 TOST and the proposed test both replace the point null with a region of practically negligible effects, but they ask opposite questions. TOST takes non-equivalence ($|\Delta| \ge \delta$) as the null hypothesis and seeks evidence that the effect is small, whereas the uncertainty-adjusted test takes a negligible effect as the null hypothesis and seeks evidence that the effect is large enough to matter. To compare them on a common scale, we set $\delta = 0.2$ and $c = 0.1$, so that the asymptotic threshold $1.96c \approx 0.196$ matches the equivalence bound. @fig-comparison-tost shows, for two-sample comparisons with equal allocation, the rejection rate of the traditional test, the rejection rate of the uncertainty-adjusted test, and the rate at which TOST establishes equivalence, for total sample sizes of 200 and 2,000 (3,000 replicates per scenario).
 
@@ -522,11 +584,11 @@ The uncertainty-adjusted test therefore behaves like a one-step minimum-effect t
 
 ## Choosing the Uncertainty Parameter $c$
 
-The choice of $c$ should be guided by the minimum clinically/practically important difference (MCID):
+The choice of $c$ should be guided by the minimum clinically/practically important difference (MCID). @tbl-guidelines lists suggested values of $c$ for several minimum important effect sizes, together with the corresponding asymptotic MDE.
 
 ```{r}
 #| label: tbl-guidelines
-#| tbl-cap: "Recommended uncertainty parameter $c$ based on minimum important effect size"
+#| tbl-cap: "Recommended uncertainty parameter $c$ based on minimum important effect size. The Example column gives illustrative examples only."
 
 guidelines <- data.table(
   `Minimum important effect ($d$)` = c(0.02, 0.05, 0.1, 0.2, 0.3),
@@ -539,28 +601,42 @@ guidelines <- data.table(
               "Strong treatment effects")
 )
 
+if (is_pdf) {
 kable(guidelines, align = "cccl", booktabs = TRUE, format = "latex", escape = FALSE)
+} else {
+  guidelines %>%
+    flextable() %>%
+    set_header_labels(values = setNames(c("Minimum important effect (d)", "c", "MDE (n → ∞)", "Example"),
+                                        names(guidelines))) %>%
+    align(j = 1:3, align = "center", part = "all") %>%
+    autofit()
+}
 ```
 
 **Rule of thumb:** Set $c$ slightly below half the minimum important effect size. This ensures that effects below your threshold cannot achieve significance regardless of sample size, while effects above it can be detected with adequate power.
 
-## Sample Size Calculation
+## Sample Size Calculation {#sec-samplesize}
 
-With uncertainty $c$, the required sample size for power $1-\beta$ is:
+Under the alternative, the estimated standardized effect is approximately $N(d, 1/n)$, so its standard deviation is $\sqrt{1/n}$; the null uncertainty $c$ enters only the rejection threshold $z_{1-\alpha/2}\sqrt{1/n + c^2}$. Ignoring the probability of rejection in the opposite tail, the required sample size for power $1-\beta$ satisfies
 
-$$n_{c\sigma} = \frac{1}{1/n - c^2}$$
+$$d = z_{1-\alpha/2}\sqrt{\frac{1}{n} + c^2} + z_{1-\beta}\sqrt{\frac{1}{n}}.$$
 
-where $n$ is the traditional sample size. If $1/n \leq c^2$, no finite sample size can achieve the desired power---the target effect is below the minimum detectable threshold.
+Writing $s = 1/\sqrt{n}$ and $A = z_{1-\alpha/2}^2 - z_{1-\beta}^2$ (positive whenever $z_{1-\alpha/2} > z_{1-\beta}$, e.g., $\alpha = 0.05$ and power 0.8), squaring $d - z_{1-\beta}s = z_{1-\alpha/2}\sqrt{s^2 + c^2}$ gives $A s^2 + 2 d z_{1-\beta} s - (d^2 - z_{1-\alpha/2}^2 c^2) = 0$, whose positive root is
+
+$$s = \frac{-d z_{1-\beta} + \sqrt{d^2 z_{1-\beta}^2 + A\,(d^2 - z_{1-\alpha/2}^2 c^2)}}{A}, \qquad n_{c\sigma} = \frac{1}{s^2}.$$
+
+When $c = 0$, this reduces to the traditional formula $n = \left((z_{1-\alpha/2} + z_{1-\beta})/d\right)^2$. If $d \leq z_{1-\alpha/2}\,c$, no finite sample size can achieve the desired power---the target effect does not exceed the asymptotic minimum detectable effect. @fig-samplesize shows the required sample size for several values of $c$.
 
 ```{r}
 #| label: fig-samplesize
 #| fig-cap: "Required sample size with uncertainty adjustment ($\\alpha = 0.05$, power = 0.8)"
 
 SampleNew <- function(d, c, alpha = 0.05, beta = 0.2) {
-  n <- ((qnorm(1 - alpha/2) + qnorm(1 - beta)) / d)^2
-  coef <- (1/n - c^2)
-  out <- ifelse(coef <= 0, NA, 1/coef)
-  return(out)
+  za <- qnorm(1 - alpha/2)
+  zb <- qnorm(1 - beta)
+  A <- za^2 - zb^2
+  s <- (-d * zb + sqrt(pmax(d^2 * zb^2 + A * (d^2 - za^2 * c^2), 0))) / A
+  ifelse(d <= za * c, NA, 1 / s^2)
 }
 
 sn <- CJ(d = seq(0.05, 1, by = 0.001), c = c(0, 0.01, 0.05, 0.1, 0.2))
@@ -640,7 +716,7 @@ At smaller sample sizes, however, the required p-value is far less stringent tha
 
 4. **Novel approach:** As a relatively new method (first documented in 2018), more empirical evaluation across diverse applications is needed.
 
-# Conclusion {#sec-conclusion}
+# Conclusions {#sec-conclusion}
 
 We have presented a redefined hypothesis testing framework that incorporates uncertainty into the null hypothesis. By acknowledging that point null hypotheses are unrealistic, our method provides effect-size-integrated p-values that prevent trivially small differences from achieving statistical significance. The test has exact size under the distributional null and is conservative under the point null, while providing researchers with a principled tool to distinguish between statistical and practical significance.
 
@@ -652,4 +728,16 @@ We encourage researchers to adopt this framework alongside traditional analyses,
 
 *This work was originally conceived in 2017 and first publicly documented on November 8, 2018 at https://blog.zarathu.com/posts/2018-11-08-redefinenullhypothesis/*
 
-# References
+**Supplementary Materials:** The following supporting information can be downloaded at: TODO (link assigned by the journal). Code S1: R scripts reproducing all simulations, tables, and figures.
+
+**Author Contributions:** Conceptualization, J.K.; methodology, J.K. and T.S.; software, T.S.; validation, T.S.; formal analysis, J.K. and T.S.; writing---original draft preparation, J.K.; writing---review and editing, J.K. and T.S.; visualization, T.S.; supervision, J.K. All authors have read and agreed to the published version of the manuscript.
+
+**Funding:** This research received no external funding.
+
+**Data Availability Statement:** The birth weight data analyzed in this study are publicly available as the dataset `birthwt` in the R package MASS. The R code used to generate all simulation results, tables, and figures is available at <https://github.com/staehee/redefinenullhypothesis/tree/main/code> and as Code S1 in the Supplementary Materials.
+
+**Acknowledgments:** During the preparation of this manuscript, the authors used [TODO: tool name, version] for the purposes of [TODO]. The authors have reviewed and edited the output and take full responsibility for the content of this publication.
+
+**Conflicts of Interest:** The authors declare no conflicts of interest.
+
+# References {.unnumbered}
