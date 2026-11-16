@@ -202,3 +202,12 @@ MDPI 템플릿 순서에 맞춰 굵은 글씨 제목의 단락으로 넣었습�
 - Acknowledgments의 도구명·버전, 사용 목적
 - Supplementary Materials의 저널 다운로드 링크 (게재 시 저널이 부여)
 - `redefinenullhypothesis_journal.qmd`와 최초 원고 `redefinenullhypothesis.qmd`는 손대지 않았습니다. 둘 다 예전 표본수 공식을 담고 있으니, 더 쓰지 않을 거면 삭제하는 게 좋겠습니다.
+
+---
+
+# 3차 작업 — TODO 채우기 (2026-11-16)
+- **2.5 Use of Generative AI:** 본문을 저자가 준 문구로 교체했습니다(Claude (Anthropic; Claude Opus 5.5) 사용 범위와 저자 검증·책임).
+- **Acknowledgments:** 저자가 준 MDPI 형식 문구로 교체했습니다.
+- **Supplementary Materials:** 남아 있던 세 번째 TODO("link assigned by the journal")를 MDPI 템플릿의 기본 자리표시자 `www.mdpi.com/xxx/s1`로 바꿨습니다. 실제 링크는 게재 시 편집부가 넣습니다.
+- `build.sh`로 PDF, DOCX, `submission/`, arXiv 패키지를 다시 만들었습니다.
+- **검증:** "TODO" 문자열이 qmd 소스, `submission/manuscript.pdf`, `submission/manuscript.docx`(word/*.xml 전체), arXiv tex, `supplementary_code.zip` 모두에서 0건입니다.
