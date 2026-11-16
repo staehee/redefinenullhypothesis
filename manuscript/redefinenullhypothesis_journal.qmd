@@ -246,14 +246,19 @@ The shrinkage principle extends naturally to the Welch t-test for unequal varian
 
 ### General Formulation
 
-For any Wald-type statistic $W$ (z, t, or chi-square), the uncertainty-adjusted statistic and p-value are:
+For a Wald-type statistic $W$ on the z or t scale, the uncertainty-adjusted statistic and two-sided p-value are:
 $$W_{c} = \frac{W}{\sqrt{1 + n_{\text{eff}} c^2}}, \quad p_{c\sigma} = 2\left(1 - F_{W}(|W_c|)\right)$$
 
-where $F_W$ is the appropriate reference distribution (normal, t, or chi-square).
+where $F_W$ is the standard normal or t distribution function.
+
+For a chi-square Wald statistic $X^2 = \hat{\boldsymbol\theta}^\top \hat{V}^{-1} \hat{\boldsymbol\theta}$ with $k$ degrees of freedom, the statistic is already on a squared scale, so the shrinkage factor enters squared. If the null uncertainty is taken proportional to the sampling covariance, $\boldsymbol\theta \sim N(\mathbf{0},\, n_{\text{eff}} c^2 \hat{V})$, then
+$$X^2_{c} = \frac{X^2}{1 + n_{\text{eff}} c^2} \sim \chi^2_k, \quad p_{c\sigma} = 1 - F_{\chi^2_k}(X^2_c)$$
+
+which uses only the upper tail. For $k = 1$, $X^2 = z^2$ and this reduces exactly to the z-scale formula above.
 
 ### Connection to Confidence Intervals
 
-The criterion $|z_{c\sigma}| > z_{1-\alpha/2}$ is equivalent to requiring that the $(1-\alpha)$ confidence interval for the effect lies entirely outside the expanded null interval $[-1.96 c\sigma, +1.96 c\sigma]$. This provides an intuitive bridge to TOST and SGPV, which also rely on interval-based reasoning.
+The criterion $|z_{c\sigma}| > z_{1-\alpha/2}$ is closely related to, but not identical to, requiring that the $(1-\alpha)$ confidence interval for the effect lies entirely outside the expanded null interval $[-z_{1-\alpha/2} c\sigma, +z_{1-\alpha/2} c\sigma]$. On the standardized scale, the interval criterion requires $d > z_{1-\alpha/2}(1/\sqrt{n} + c)$, whereas our criterion requires $d > z_{1-\alpha/2}\sqrt{1/n + c^2}$. Because $\sqrt{1/n + c^2} \le 1/\sqrt{n} + c$, the interval criterion is a sufficient but more conservative condition; the two approximately coincide when either $1/\sqrt{n}$ or $c$ dominates. This provides an intuitive bridge to TOST and SGPV, which also rely on interval-based reasoning.
 
 # Simulation Study
 
